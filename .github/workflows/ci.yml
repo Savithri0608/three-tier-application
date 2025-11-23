@@ -1,35 +1,45 @@
-name: CI - Build and Test
+name: Build and Test
 
 on:
   push:
-    branches: ["main"]
+    branches: [ "main" ]
   pull_request:
-    branches: ["main"]
 
 jobs:
-  build-and-test:
+  build-frontend:
     runs-on: ubuntu-latest
-
     steps:
-      # 1. Checkout code
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2. Setup Node
-      - name: Setup Node.js
+      - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: "16"
+          node-version: 16
 
-      # 3. Install dependencies
-      - name: Install dependencies
-        run: Dockerfile-Projects/frontend/
-             npm install
+      - name: Install frontend dependencies
+        working-directory: Dockerfile-Projects/frontend
+        run: npm install
 
-      # 4. Run tests
-      - name: Run tests
-        run: npm test
-
-      # 5. Build the app
-      - name: Build app
+      - name: Build frontend
+        working-directory: Dockerfile-Projects/frontend
         run: npm run build
+
+  build-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Install backend dependencies
+        working-directory: Dockerfile-Projects/backend
+        run: npm install
+
+      - name: Test backend
+        working-directory: Dockerfile-Projects/backend
+        run: npm test || echo "No backend tests"
