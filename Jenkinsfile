@@ -1,23 +1,28 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'node:16'
+            args '-u root:root'
+        }
+    }
 
     environment {
-        DOCKER_HUB_CREDS = credentials('dockerhub-creds')
+        FRONTEND = "Dockerfile-Projects/frontend"
+        BACKEND  = "Dockerfile-Projects/backend"
     }
 
     stages {
 
         stage('Checkout') {
-    steps {
-        git branch: 'main',
-            credentialsId: 'github-creds',
-            url: 'https://github.com/Savithri0608/three-tier-application.git'
-    }
-}
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/Savithri0608/three-tier-application.git'
+            }
+        }
 
         stage('Install Frontend') {
             steps {
-                dir('Dockerfile-Projects/frontend') {
+                dir("${DOCKERFILE-PROJECTS/FRONTEND}") {
                     sh 'npm install'
                     sh 'npm run build'
                 }
@@ -26,30 +31,16 @@ pipeline {
 
         stage('Install Backend') {
             steps {
-                dir('Dockerfile-Projects/backend') {
+                dir("${DOCKERFILE-PROJECTS/BACKEND}") {
                     sh 'npm install'
                     sh 'npm test || true'
                 }
             }
         }
 
-        stage('Docker Login') {
+        stage('Skip Docker Build') {
             steps {
-                sh "echo ${DOCKER_HUB_CREDS_PSW} | docker login -u ${DOCKER_HUB_CREDS_USR} --password-stdin"
-            }
-        }
-
-        stage('Docker Build') {
-            steps {
-                sh 'docker build -t savithri06/frontend:latest Dockerfile-Projects/frontend'
-                sh 'docker build -t savithri06/backend:latest Dockerfile-Projects/backend'
-            }
-        }
-
-        stage('Docker Push') {
-            steps {
-                sh 'docker push savithri06/frontend:latest'
-                sh 'docker push savithri06/backend:latest'
+                echo "Docker build skipped because images already built."
             }
         }
     }
