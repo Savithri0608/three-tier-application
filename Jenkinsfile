@@ -2,28 +2,36 @@ pipeline {
     agent any
 
     stages {
-        stage('Install Node') {
+
+        stage('Checkout') {
             steps {
-                sh 'curl -fsSL https://deb.nodesource.com/setup_16.x | bash -'
-                sh 'apt-get install -y nodejs'
+                git branch: 'main',
+                    url: 'https://github.com/Savithri0608/three-tier-application.git'
             }
         }
 
-        stage('Frontend Build') {
+        stage('Install Frontend') {
             steps {
-                dir('Projects/frontend') {
+                dir('Dockerfile-Projects/frontend') {
                     sh 'npm install'
                     sh 'npm run build'
                 }
             }
         }
 
-        stage('Backend Build') {
+        stage('Install Backend') {
             steps {
-                dir('Projects/backend') {
+                dir('Dockerfile-Projects/backend') {
                     sh 'npm install'
                     sh 'npm test || true'
                 }
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                sh 'docker build -t savithri06/frontend:latest Dockerfile-Projects/frontend'
+                sh 'docker build -t savithri06/backend:latest Dockerfile-Projects/backend'
             }
         }
     }
