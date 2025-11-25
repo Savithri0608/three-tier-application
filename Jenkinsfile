@@ -1,46 +1,29 @@
 pipeline {
-    agent {
-        docker {
-            image 'node:16'
-            args '-u root:root'
-        }
-    }
-
-    environment {
-        FRONTEND = "Dockerfile-Projects/frontend"
-        BACKEND  = "Dockerfile-Projects/backend"
-    }
+    agent any
 
     stages {
-
-        stage('Checkout') {
+        stage('Install Node') {
             steps {
-                git branch: 'main',
-                    url: 'https://github.com/Savithri0608/three-tier-application.git'
+                sh 'curl -fsSL https://deb.nodesource.com/setup_16.x | bash -'
+                sh 'apt-get install -y nodejs'
             }
         }
 
-        stage('Install Frontend') {
+        stage('Frontend Build') {
             steps {
-                dir("${DOCKERFILE-PROJECTS/FRONTEND}") {
+                dir('Projects/frontend') {
                     sh 'npm install'
                     sh 'npm run build'
                 }
             }
         }
 
-        stage('Install Backend') {
+        stage('Backend Build') {
             steps {
-                dir("${DOCKERFILE-PROJECTS/BACKEND}") {
+                dir('Projects/backend') {
                     sh 'npm install'
                     sh 'npm test || true'
                 }
-            }
-        }
-
-        stage('Skip Docker Build') {
-            steps {
-                echo "Docker build skipped because images already built."
             }
         }
     }
